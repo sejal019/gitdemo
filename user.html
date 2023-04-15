@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <style>
+    <!-- <style>
         body{
             font-family: sans-serif;
         }
@@ -23,36 +23,51 @@
             margin: 0.5em 0;
             padding: 1em;
         }
-    </style>
+    </style> -->
 </head>
 <body>
     <div class="container">
-        <form action="" id="contactForm">
+        <form onsubmit="SavetoLocalStorage(event)" id="contactForm">
             <label for="fname" id="name"> Name : </label>
-            <input type="text" name="fname">
+            <input type="text" name="fname"/>
             <label for="emailid"> Email : </label>
-            <input type="email" name="emailid">
-            <input type="submit" id="formsubmit">
+            <input type="email" name="emailid"/>
+            <label>Phone Number : </label>
+            <input type="tel" name="phone"/>
+            <input type="submit" id="formsubmit"/>
+            <br>
+            <ul id="listuser"></ul>
         </form>
     </div>
     <script>
-        window.onload = function() {
+        function SavetoLocalStorage(event){
+            event.preventDefault();
+            var name=event.target.fname.value;
+            var email=event.target.emailid.value;
+            var phoneno=event.target.phone.value;
+            const a={
+                name:name,
+                email:email,
+                phoneno:phoneno
+                }
+            localStorage.setItem('all_users',JSON.stringify(a));
+            a=JSON.parse((localStorage.getItem("all_users")));
+            //a.push({name:name,email:email,phoneno:phoneno});
+            
+            // localStorage.setItem('name',name);
+            // localStorage.setItem('email',email);
+            // localStorage.setItem('phoneno',phoneno);
+            for(var i=0; i<a.length; i++)
+            {
+                var li = document.createElement("li");
+                li.innerHTML=a[i]['name'];
+                document.getElementById("listuser").appendChild(li);
+            }
+        }
+        
 
-// Check for LocalStorage support.
-    if (localStorage) {
 
-  // Add an event listener for form submissions
-    document.getElementById('contactForm').addEventListener('submit', function() {
-    // Get the value of the name field.
-    var name = document.getElementById('name').value;
 
-    // Save the name in localStorage.
-    localStorage.setItem('name', name);
-  });
-
-}
-
-}
     </script>
 </body>
 </html>
