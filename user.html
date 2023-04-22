@@ -55,6 +55,24 @@
             const parentElem=document.getElementById('listOfitems');
             const childElem=document.createElement('li');
             childElem.textContent=obj.name+'-'+obj.email+'-'+obj.phoneno;
+            const delbtn=document.createElement('input');
+            delbtn.type="button";
+            delbtn.value='Delete';
+            const edit=document.createElement('input');
+            edit.type="button";
+            edit.value='Edit';
+            delbtn.onclick=()=>{
+                localStorage.removeItem(obj.email);
+                parentElem.removeChild(childElem);
+            }
+                edit.onclick=()=>{
+                localStorage.removeItem(obj.email);
+                parentElem.contentEditable=true;
+
+            }
+            
+            childElem.appendChild(delbtn);
+            childElem.appendChild(edit);
             parentElem.appendChild(childElem);
         }
 
