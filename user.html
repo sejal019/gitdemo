@@ -28,46 +28,37 @@
 <body>
     <div class="container">
         <form onsubmit="SavetoLocalStorage(event)" id="contactForm">
-            <label for="fname" id="name"> Name : </label>
-            <input type="text" name="fname"/>
-            <label for="emailid"> Email : </label>
-            <input type="email" name="emailid"/>
+            <label> Name : </label>
+            <input type="text" name="username" required/>
+            <label> Email : </label>
+            <input type="email" name="emailid"required/>
             <label>Phone Number : </label>
-            <input type="tel" name="phone"/>
-            <input type="submit" id="formsubmit"/>
-            <br>
-            <ul id="listuser"></ul>
+            <input type="tel" name="phonenum"/>
+            <button>Submit</button>
         </form>
-    </div>
-    <script>
-        function SavetoLocalStorage(event){
+        <ul id="listOfitems"></ul>
+        <script>
+            function SavetoLocalStorage(event){
             event.preventDefault();
-            var name=event.target.fname.value;
+            var name=event.target.username.value;
             var email=event.target.emailid.value;
-            var phoneno=event.target.phone.value;
-            const a={
+            var phoneno=event.target.phonenum.value;
+            const obj={
                 name:name,
                 email:email,
                 phoneno:phoneno
                 }
-            localStorage.setItem('all_users',JSON.stringify(a));
-            a=JSON.parse((localStorage.getItem("all_users")));
-            //a.push({name:name,email:email,phoneno:phoneno});
-            
-            // localStorage.setItem('name',name);
-            // localStorage.setItem('email',email);
-            // localStorage.setItem('phoneno',phoneno);
-            for(var i=0; i<a.length; i++)
-            {
-                var li = document.createElement("li");
-                li.innerHTML=a[i]['name'];
-                document.getElementById("listuser").appendChild(li);
-            }
+            localStorage.setItem(obj.email,JSON.stringify(obj));
+            showUserOnScreen(obj);
         }
-        
+        function showUserOnScreen(obj){
+            const parentElem=document.getElementById('listOfitems');
+            const childElem=document.createElement('li');
+            childElem.textContent=obj.name+'-'+obj.email+'-'+obj.phoneno;
+            parentElem.appendChild(childElem);
+        }
 
-
-
-    </script>
+        </script>
+    </div>
 </body>
 </html>
