@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 5px;
+            margin-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ccc;
+        }
+        .total-row {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Expense Tracker</h1>
+        <form id="expenseForm">
+            <label for="expenseName">Expense Name:</label>
+            <input type="text" id="expenseName" required>
+
+            <label for="expenseAmount">Expense Amount:</label>
+            <input type="number" id="expenseAmount" required>
+
+            <button type="submit">Add Expense</button>
+        </form>
+        <table id="expenseTable">
+            <tr>
+                <th>Expense Name</th>
+                <th>Amount</th>
+                <th>Action</th>
+            </tr>
+        </table>
+       
+    </div>
+
+    <script>
+        let editMode = false;
+        let editExpenseIndex = null;
+
+        // Initialize the expense table and total expense
+        window.onload = function() {
+            initializeExpenseTable();
+
+        };
+
+        // Handle form submission for adding or updating an expense
+        document.getElementById('expenseForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const expenseNameInput = document.getElementById('expenseName');
+            const expenseAmountInput = document.getElementById('expenseAmount');
+
+            const expenseName = expenseNameInput.value;
+            const expenseAmount = parseFloat(expenseAmountInput.value);
+
+            if (expenseName && !isNaN(expenseAmount) && expenseAmount > 0) {
+                if (editMode) {
+                    updateExpense(expenseName, expenseAmount);
+                } else {
+                    addExpense(expenseName, expenseAmount);
+                }
+
+                expenseNameInput.value = '';
+                expenseAmountInput.value = '';
+
+                // Reset edit mode
+                editMode = false;
+                editExpenseIndex = null;
+                document.getElementById('expenseForm').reset();
+                document.getElementById('expenseForm').querySelector('button[type="submit"]').textContent = 'Add Expense';
+            }
+        });
+
+        // Add an expense to the table and local storage
+        function addExpense(name, amount) {
+            const expense = {
+                name: name,
+                amount: amount
+            };
+
+            const expenses = getExpensesFromLocalStorage();
+            expenses.push(expense);
+            setExpensesInLocalStorage(expenses);
+
+            addExpenseToTable(expense);
+        }
+
+        // Update an expense in the table and local storage
+        function updateExpense(name, amount) {
+            const expenses = getExpensesFromLocalStorage();
+            expenses[editExpenseIndex].name = name;
+            expenses[editExpenseIndex].amount = amount;
+            setExpensesInLocalStorage(expenses);
+
+            updateExpenseInTable(editExpenseIndex, name, amount);
+
+            // Reset edit mode
+            editMode = false;
+            editExpenseIndex = null;
+            document.getElementById('expenseForm').querySelector('button[type="submit"]').textContent = 'Add Expense';
+        }
+
+        // Initialize the expense table from local storage
+        function initializeExpenseTable() {
+            const expenses = getExpensesFromLocalStorage();
+
+            for (let i = 0; i < expenses.length; i++) {
+                addExpenseToTable(expenses[i]);
+            }
+        }
+
+        // Add an expense row to the table
+        function addExpenseToTable(expense) {
+            const table = document.getElementById('expenseTable');
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${expense.name}</td>
+                <td>${expense.amount}</td>
+                <td>
+                    <button onclick="editExpense(${table.rows.length - 1})">Edit</button>
+                    <button onclick="deleteExpense(${table.rows.length - 1})">Delete</button>
+                </td>
+            `;
+
+            table.appendChild(row);
+        }
+
+        // Update an expense row in the table
+        function updateExpenseInTable(index, name, amount) {
+            const table = document.getElementById('expenseTable');
+            const row = table.rows[index + 1];
+
+            row.cells[0].textContent = name;
+            row.cells[1].textContent = amount;
+        }
+
+        // Delete an expense from the table and local storage
+        function deleteExpense(index) {
+            const expenses = getExpensesFromLocalStorage();
+            expenses.splice(index, 1);
+            setExpensesInLocalStorage(expenses);
+
+            const table = document.getElementById('expenseTable');
+            table.deleteRow(index + 1);
+
+            calculateTotalExpense();
+        }
+
+        // Edit an expense
+        function editExpense(index) {
+            const expenses = getExpensesFromLocalStorage();
+            const expense = expenses[index];
+
+            const expenseNameInput = document.getElementById('expenseName');
+            const expenseAmountInput = document.getElementById('expenseAmount');
+
+            expenseNameInput.value = expense.name;
+            expenseAmountInput.value = expense.amount;
+
+            // Set edit mode
+            editMode = true;
+            editExpenseIndex = index;
+            document.getElementById('expenseForm').querySelector('button[type="submit"]').textContent = 'Update Expense';
+        }
+
+        // Get the expenses array from local storage
+        function getExpensesFromLocalStorage() {
+            const expensesJSON = localStorage.getItem('expenses');
+            return expensesJSON ? JSON.parse(expensesJSON) : [];
+        }
+
+        // Set the expenses array in local storage
+        function setExpensesInLocalStorage(expenses) {
+            localStorage.setItem('expenses', JSON.stringify(expenses));
+        }
+
+    </script>
+</body>
+</html>
+
