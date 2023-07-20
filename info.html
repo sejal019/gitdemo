@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit User Details</title>
+  <!-- Add Font Awesome CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    /* Add your custom CSS styling here */
+  </style>
+</head>
+<body>
+  <!-- Display user details with edit icon -->
+  <div>
+    <span>User Name: </span>
+    <span>Email: </span>
+    <i class="fas fa-edit edit-icon"></i>
+  </div>
+
+  <!-- Registration form for editing user details -->
+  <form id="editForm" style="display: none;">
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name">
+
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email">
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <!-- JavaScript code -->
+  <script>
+    // Function to populate the form with user details
+    function populateForm(name, email) {
+      document.getElementById('name').value = name;
+      document.getElementById('email').value = email;
+    }
+
+    // Function to handle the edit icon click event
+    function handleEditIconClick() {
+      const userDetails = {
+        name: "John Doe",
+        email: "john@example.com"
+        // You can fetch the user details from your server here or use any other method to get the details.
+      };
+
+      // Populate the form with user details
+      populateForm(userDetails.name, userDetails.email);
+
+      // Show the form
+      document.getElementById('editForm').style.display = 'block';
+    }
+
+    // Function to handle form submission
+    function handleSubmit(event) {
+      event.preventDefault();
+
+      // Get the updated user details from the form
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+
+      // Perform any necessary validations before submitting the data to the server
+
+      // Assuming you have an API to update user details, make a request to update the user details here
+      // For example, using fetch API or any other library like Axios.
+
+      // After successfully updating the user details on the server, update the user details displayed on the website
+      const userDetails = {
+        name,
+        email
+      };
+      updateDisplayedUserDetails(userDetails);
+
+      // Hide the form after submission
+      document.getElementById('editForm').style.display = 'none';
+    }
+
+    // Function to update the user details displayed on the website
+    function updateDisplayedUserDetails(userDetails) {
+      const userNameSpan = document.querySelector('span:first-child');
+      const userEmailSpan = document.querySelector('span:nth-child(2)');
+
+      userNameSpan.textContent = `User Name: ${userDetails.name}`;
+      userEmailSpan.textContent = `Email: ${userDetails.email}`;
+    }
+
+    // Add click event listener to the edit icon
+    const editIcon = document.querySelector('.edit-icon');
+    editIcon.addEventListener('click', handleEditIconClick);
+
+    // Add submit event listener to the form
+    const editForm = document.getElementById('editForm');
+    editForm.addEventListener('submit', handleSubmit);
+  </script>
+</body>
+</html>
