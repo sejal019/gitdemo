@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>promise all</title>
+</head>
+<body>
+    
+</body>
+<script>
+let lastActivityTime = null;
+const posts = [];
+
+function updateLastUserActivityTime() {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            lastActivityTime = new Date().toLocaleString();
+            resolve(lastActivityTime);
+        }, 1000);
+    });
+}
+
+function createPost(post) {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            posts.push(post);
+            resolve(posts);
+        }, 1000);
+    });
+}
+
+function deletePost() {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            if (posts.length > 0) {
+                const deletedPost = posts.pop();
+                resolve(deletedPost);
+            } else {
+                reject("ERROR: No posts to delete");
+            }
+        }, 1000);
+    });
+}
+
+// Create promises for updating activity time before and after post creation
+const updateActivityBeforePost = updateLastUserActivityTime();
+const createNewPost = updateActivityBeforePost.then(() => createPost({ title: "First post" }));
+const updateActivityAfterPost = createNewPost.then(() => updateLastUserActivityTime());
+
+// Resolve both promises together using Promise.all
+Promise.all([updateActivityBeforePost, updateActivityAfterPost])
+    .then(([initialActivityTime, updatedTime]) => {
+        console.log("User's Initial Activity Time:", initialActivityTime);
+        console.log("Last Activity Time After Post Creation:", updatedTime);
+        
+        // Log the user's last updated activity time after creating the post
+        console.log("User's Last Updated Activity Time:", lastActivityTime);
+        
+        return deletePost();
+    })
+    .then((deletedPost) => {
+        console.log("Deleted Post:", deletedPost);
+        console.log("Remaining Posts:", posts);
+    })
+    .catch((error) => {
+        console.log(error);
+    });
+
+
+
+
+</script>
+</html>
