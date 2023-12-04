@@ -4,79 +4,160 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <!-- <style>
-        body{
-            font-family: sans-serif;
+    <title>Expense Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
         }
-        .container{
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
         }
-        form{
-            display: flex;
-            flex-direction: column;
+        h1 {
+            text-align: center;
         }
-        form input{
-            margin: 0.5em 0;
-            padding: 1em;
+        form {
+            margin-bottom: 20px;
         }
-    </style> -->
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 5px;
+            margin-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ccc;
+        }
+        .total-row {
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <form onsubmit="SavetoLocalStorage(event)" id="contactForm">
-            <label> Name : </label>
-            <input type="text" name="username" required/>
-            <label> Email : </label>
-            <input type="email" name="emailid"required/>
-            <label>Phone Number : </label>
-            <input type="tel" name="phonenum"/>
-            <button>Submit</button>
+        <h1>Expense Tracker</h1>
+        <form onsubmit="addExpense(event)">
+            <label for="expenseName">Expense Name:</label>
+            <input type="text" id="expenseName" required>
+
+            <label for="expenseAmount">Expense Amount:</label>
+            <input type="number" id="expenseAmount" required>
+
+            <button type="submit">Add Expense</button>
         </form>
-        <ul id="listOfitems"></ul>
-        <script>
-            function SavetoLocalStorage(event){
-            event.preventDefault();
-            var name=event.target.username.value;
-            var email=event.target.emailid.value;
-            var phoneno=event.target.phonenum.value;
-            const obj={
-                name:name,
-                email:email,
-                phoneno:phoneno
-                }
-            localStorage.setItem(obj.email,JSON.stringify(obj));
-            showUserOnScreen(obj);
-        }
-        function showUserOnScreen(obj){
-            const parentElem=document.getElementById('listOfitems');
-            const childElem=document.createElement('li');
-            childElem.textContent=obj.name+'-'+obj.email+'-'+obj.phoneno;
-            const delbtn=document.createElement('input');
-            delbtn.type="button";
-            delbtn.value='Delete';
-            const edit=document.createElement('input');
-            edit.type="button";
-            edit.value='Edit';
-            delbtn.onclick=()=>{
-                localStorage.removeItem(obj.email);
-                parentElem.removeChild(childElem);
-            }
-                edit.onclick=()=>{
-                localStorage.removeItem(obj.email);
-                parentElem.contentEditable=true;
-
-            }
-            
-            childElem.appendChild(delbtn);
-            childElem.appendChild(edit);
-            parentElem.appendChild(childElem);
-        }
-
-        </script>
+        <table id="expenseTable">
+            <tr>
+                <th>Expense Name</th>
+                <th>Amount</th>
+                <th>Action</th>
+            </tr>
+        </table>
+        <p class="total-row">Total Expense: <span id="totalExpense">0</span></p>
     </div>
+
+    <script>
+        // Initialize the expense table and total expense
+        window.onload = function() {
+            initializeExpenseTable();
+            calculateTotalExpense();
+        };
+
+        // Add an expense to the table and local storage
+        function addExpense(event) {
+            event.preventDefault();
+
+            const expenseNameInput = document.getElementById('expenseName');
+            const expenseAmountInput = document.getElementById('expenseAmount');
+
+            const expenseName = expenseNameInput.value;
+            const expenseAmount = parseFloat(expenseAmountInput.value);
+
+            if (expenseName && !isNaN(expenseAmount) && expenseAmount > 0) {
+                const expense = {
+                    name: expenseName,
+                    amount: expenseAmount
+                };
+
+                const expenses = getExpensesFromLocalStorage();
+                expenses.push(expense);
+                setExpensesInLocalStorage(expenses);
+
+                addExpenseToTable(expense);
+
+                calculateTotalExpense();
+
+                expenseNameInput.value = '';
+                expenseAmountInput.value = '';
+            }
+        }
+
+        // Initialize the expense table from local storage
+        function initializeExpenseTable() {
+            const expenses = getExpensesFromLocalStorage();
+
+            for (let i = 0; i < expenses.length; i++) {
+                addExpenseToTable(expenses[i]);
+            }
+        }
+
+        // Add an expense row to the table
+        function addExpenseToTable(expense) {
+            const table = document.getElementById('expenseTable');
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${expense.name}</td>
+                <td>${expense.amount}</td>
+                <td><button onclick="deleteExpense(event)">Delete</button></td>
+            `;
+
+            table.appendChild(row);
+        }
+
+        // Delete an expense from the table and local storage
+        function deleteExpense(event) {
+            const row = event.target.parentNode.parentNode;
+            const expenseName = row.querySelector('td:first-child').textContent;
+
+            const expenses = getExpensesFromLocalStorage();
+            const updatedExpenses = expenses.filter(expense => expense.name !== expenseName);
+            setExpensesInLocalStorage(updatedExpenses);
+
+            row.parentNode.removeChild(row);
+
+            calculateTotalExpense();
+        }
+
+        // Get the expenses array from local storage
+        function getExpensesFromLocalStorage() {
+            const expensesJSON = localStorage.getItem('expenses');
+            return expensesJSON ? JSON.parse(expensesJSON) : [];
+        }
+
+        // Set the expenses array in local storage
+        function setExpensesInLocalStorage(expenses) {
+            localStorage.setItem('expenses', JSON.stringify(expenses));
+        }
+
+        // Calculate and display the total expense
+        function calculateTotalExpense() {
+            const expenses = getExpensesFromLocalStorage();
+            const totalExpense = expenses.reduce((total, expense) => total + expense.amount, 0);
+
+            const totalExpenseElement = document.getElementById('totalExpense');
+            totalExpenseElement.textContent = totalExpense.toFixed(2);
+        }
+    </script>
 </body>
 </html>
+
