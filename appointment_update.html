@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointment Scheduler</title>
+</head>
+<body>
+    <h1>Appointment Scheduler</h1>
+    <form onsubmit="saveToCloud(event)">
+        <label>Name:</label>
+        <input type="text" id="name" name="name" required><br><br>
+
+        <label>EmailId:</label>
+        <input type="email" id="email" name="EmailId" required><br><br>
+
+        <label>Phone Number:</label><br>
+        <input id="phonenumber" type="tel" name="phonenumber" required><br><br>
+
+        <input type="hidden" id="editUserId" value=""> <!-- Hidden field to store the ID of the user being edited -->
+
+        <button id="save-button" type="submit">Submit</button>
+    </form>
+    
+    <h2>Appointments</h2>
+    <ul id="appointmentsFromCloud"></ul>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.4/axios.min.js"></script>
+    <script>
+        const cloudApiUrl = 'https://crudcrud.com/api/69d33873ec5045e49aa4d377346cd4f2/appointment';
+
+        function saveToCloud(event) {
+            event.preventDefault();
+            const name = event.target.name.value;
+            const email = event.target.email.value;
+            const phonenumber = event.target.phonenumber.value;
+            const editUserId = event.target.editUserId.value;
+
+            if (editUserId) {
+                // If editUserId exists, perform an update (PUT) request
+                editAppointment(editUserId, { name, email, phonenumber });
+            } else {
+                // If editUserId does not exist, perform a create (POST) request
+                createAppointment({ name, email, phonenumber });
+            }
+        }
+
+        function createAppointment(data) {
+            axios.post(cloudApiUrl, data)
+                .then(response => {
+                    console.log('Appointment created:', response.data);
+                    clearForm();
+                    fetchAppointmentsFromCloud();
+                })
+                .catch(error => {
+                    console.error('Error creating appointment:', error);
+                });
+        }
+
+        function editAppointment(userId, data) {
+            axios.put(`${cloudApiUrl}/${userId}`, data)
+                .then(response => {
+                    console.log('Appointment updated:', response.data);
+                    clearForm();
+                    fetchAppointmentsFromCloud();
+                })
+                .catch(error => {
+                    console.error('Error updating appointment:', error);
+                });
+        }
+
+        function clearForm() {
+            document.getElementById('name').value = '';
+            document.getElementById('email').value = '';
+            document.getElementById('phonenumber').value = '';
+            document.getElementById("save-button").textContent = "Add Product";
+            document.getElementById('editUserId').value = '';
+        }
+
+        function populateFormForEdit(user) {
+            document.getElementById('name').value = user.name;
+            document.getElementById('email').value = user.email;
+            document.getElementById('phonenumber').value = user.phonenumber;
+            document.getElementById("save-button").textContent = "Update";
+            document.getElementById('editUserId').value = user._id;
+        }
+
+        function showNewUserFromCloud(user) {
+            const appointmentsFromCloud = document.getElementById('appointmentsFromCloud');
+            const li = document.createElement('li');
+            li.textContent = `Name: ${user.name}, Email: ${user.email}, Phone: ${user.phonenumber}`;
+            
+            const editButton = document.createElement('button');
+            editButton.textContent = 'Edit';
+            editButton.addEventListener('click', () => {
+                populateFormForEdit(user);
+            });
+            
+            li.appendChild(editButton);
+            appointmentsFromCloud.appendChild(li);
+             
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.addEventListener('click', () => {
+                deleteAppointment(user._id); // Adjust '_id' according to your response structure
+                appointmentsFromCloud.removeChild(li);
+            });
+            
+            li.appendChild(deleteButton);
+            appointmentsFromCloud.appendChild(li);
+        }
+
+        window.addEventListener("DOMContentLoaded", () => {
+            fetchAppointmentsFromCloud();
+        });
+
+        function fetchAppointmentsFromCloud() {
+            const appointmentsFromCloud = document.getElementById('appointmentsFromCloud');
+            appointmentsFromCloud.innerHTML = '';
+
+            axios.get(cloudApiUrl)
+                .then(response => {
+                    const cloudAppointments = response.data;
+                    cloudAppointments.forEach(appointment => {
+                        showNewUserFromCloud(appointment);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching appointments from cloud:', error);
+                });
+        }
+        function deleteAppointment(appointmentId) {
+            axios.delete(`${cloudApiUrl}/${appointmentId}`)
+                .then(response => {
+                    console.log('Appointment deleted:', response.data);
+                })
+                .catch(error => {
+                    console.error('Error deleting appointment:', error);
+                });
+        }
+    </script>
+</body>
+</html>
